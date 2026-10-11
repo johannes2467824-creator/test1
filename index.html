@@ -1,74 +1,782 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#000000">
-<title>My Clock</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#92C9F5">
+
+<title>My Display</title>
+
+<!-- FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Italianno&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
 
 <style>
+
+/* =========================
+   GENERAL
+========================= */
+
 * {
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
-  margin: 0;
-  background: #000;
-  color: white;
-  font-family: -apple-system, Arial, sans-serif;
-  height: 100dvh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    background: #92C9F5;
 }
 
-.container {
-  text-align: center;
+/* =========================
+   SCREEN SYSTEM
+========================= */
+
+.screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+
+    transition:
+        opacity 2s ease,
+        transform 2s ease;
+}
+
+/* =========================
+   SUNSET SCREEN
+========================= */
+
+#sunset-screen {
+    z-index: 2;
+
+    background: linear-gradient(
+        to bottom,
+        #92C9F5 0%,
+        #B8D9F5 24%,
+        #D9D5E8 43%,
+        #EFC7CE 60%,
+        #F9B7A5 76%,
+        #FFD0A0 91%,
+        #F6A978 100%
+    );
+}
+
+/* SUN GLOW */
+
+.sun-glow {
+    position: absolute;
+    width: 80vw;
+    height: 80vw;
+    max-width: 650px;
+    max-height: 650px;
+
+    bottom: -40%;
+    left: 50%;
+
+    transform: translateX(-50%);
+    border-radius: 50%;
+
+    background: radial-gradient(
+        circle,
+        rgba(255,245,205,0.75),
+        rgba(255,215,155,0.35) 35%,
+        transparent 70%
+    );
+}
+
+/* SUN */
+
+.sun {
+    position: absolute;
+    width: clamp(130px,18vw,260px);
+    aspect-ratio: 1;
+
+    bottom: -7%;
+    left: 50%;
+
+    transform: translateX(-50%);
+    border-radius: 50%;
+
+    background: linear-gradient(
+        to bottom,
+        #FFFDF0,
+        #FFE0A7
+    );
+
+    box-shadow: 0 0 45px rgba(255,240,190,0.5);
+}
+
+/* =========================
+   CLOUDS
+========================= */
+
+.cloud {
+    position: absolute;
+    width: 200px;
+    height: 65px;
+
+    background: rgba(255,255,255,0.35);
+    border-radius: 100px;
+
+    animation: float 55s linear infinite;
+    pointer-events: none;
+}
+
+.cloud::before,
+.cloud::after {
+    content: "";
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 100px;
+    height: 100px;
+    top: -45px;
+    left: 35px;
+}
+
+.cloud::after {
+    width: 85px;
+    height: 85px;
+    top: -30px;
+    right: 25px;
+}
+
+.cloud1 {
+    top: 15%;
+    left: -250px;
+    animation-duration: 55s;
+}
+
+.cloud2 {
+    top: 40%;
+    left: -250px;
+    animation-duration: 70s;
+    animation-delay: -20s;
+}
+
+.cloud3 {
+    top: 75%;
+    left: -250px;
+    animation-duration: 65s;
+    animation-delay: -35s;
+}
+
+.cloud4 {
+    top: 25%;
+    left: -250px;
+    animation-duration: 80s;
+    animation-delay: -50s;
+}
+
+@keyframes float {
+    from {
+        transform: translate3d(-300px,0,0);
+    }
+
+    to {
+        transform: translate3d(calc(100vw + 600px),0,0);
+    }
+}
+
+/* =========================
+   CLOCK
+========================= */
+
+.clock-container {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    color: white;
+    text-align: center;
+    z-index: 10;
 }
 
 #clock {
-  font-size: 20vw;
-  font-weight: 200;
-  letter-spacing: -0.05em;
-  font-variant-numeric: tabular-nums;
+    font-family: 'Italianno', cursive;
+    font-size: clamp(110px,19vw,290px);
+    font-weight: 400;
+    line-height: 1.1;
+    white-space: nowrap;
+
+    opacity: 0;
+
+    animation:
+        slideIn 3.5s
+        cubic-bezier(.22,1,.36,1)
+        forwards;
 }
 
 #date {
-  font-size: 3vw;
-  color: #888;
-  margin-top: 15px;
+    margin-top: 5px;
+    font-family: 'Italianno', cursive;
+    font-size: clamp(30px,4vw,55px);
+    white-space: nowrap;
+
+    opacity: 0;
+
+    animation:
+        slideIn 3s
+        cubic-bezier(.22,1,.36,1)
+        1.2s forwards;
 }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(55px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   SCREEN TRANSITION
+========================= */
+
+#sunset-screen.hidden {
+    opacity: 0;
+    transform: translateY(-30px);
+    pointer-events: none;
+}
+
+/* =========================
+   WEATHER SCREEN
+========================= */
+
+#weather-screen {
+    z-index: 1;
+
+    background: linear-gradient(
+        160deg,
+        #A9D6F5 0%,
+        #C5DDF2 45%,
+        #E6D8EB 100%
+    );
+
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+}
+
+/* WEATHER CONTENT */
+
+.weather-content {
+    width: 100%;
+    max-width: 850px;
+    text-align: center;
+
+    opacity: 0;
+    transform: translateY(35px);
+
+    transition:
+        opacity 1.8s ease,
+        transform 1.8s ease;
+}
+
+#weather-screen.visible .weather-content {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.weather-location {
+    font-size: clamp(16px,2vw,23px);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.weather-icon {
+    font-size: clamp(65px,9vw,110px);
+    margin-top: 15px;
+    line-height: 1.2;
+}
+
+.temperature {
+    font-size: clamp(90px,15vw,180px);
+    font-weight: 200;
+    letter-spacing: -0.07em;
+    line-height: 1.1;
+}
+
+.weather-description {
+    font-family: 'Italianno', cursive;
+    font-size: clamp(36px,5vw,65px);
+}
+
+.high-low {
+    margin-top: 5px;
+    font-size: clamp(15px,2vw,23px);
+    font-weight: 300;
+}
+
+/* =========================
+   WEATHER DETAILS
+========================= */
+
+.weather-details {
+    display: flex;
+    justify-content: center;
+    gap: clamp(15px,5vw,80px);
+
+    margin-top: clamp(20px,5vh,55px);
+}
+
+.detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-label {
+    font-size: clamp(11px,1.4vw,15px);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.75;
+}
+
+.detail-value {
+    font-size: clamp(19px,3vw,30px);
+    font-weight: 300;
+}
+
+/* =========================
+   HOURLY FORECAST
+========================= */
+
+.hourly {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+
+    width: 100%;
+
+    /* Move hourly forecast closer to weather details */
+    margin-top: 12px;
+    padding-top: 12px;
+
+    border-top: 1px solid rgba(255,255,255,0.45);
+}
+
+.hour {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    font-size: clamp(12px,1.6vw,17px);
+    font-weight: 300;
+}
+
+.hour-icon {
+    font-size: clamp(22px,3vw,32px);
+}
+
+/* =========================
+   MOBILE OPTIMIZATION
+========================= */
+
+@media (max-width: 600px) {
+
+    #clock {
+        font-size: 24vw;
+    }
+
+    #date {
+        font-size: 7vw;
+    }
+
+    .sun-glow {
+        width: 110vw;
+        height: 110vw;
+        bottom: -30%;
+    }
+
+    .sun {
+        width: 38vw;
+        bottom: -4%;
+    }
+
+    .weather-details {
+        gap: 22px;
+    }
+
+    .hourly {
+        gap: 4px;
+    }
+}
+
+/* REDUCED MOTION */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cloud, #clock, #date {
+        animation: none;
+    }
+
+    #clock, #date {
+        opacity: 1;
+    }
+}
+
 </style>
 </head>
 
 <body>
-<div class="container">
-  <div id="clock">00:00</div>
-  <div id="date"></div>
+
+<!-- =========================
+     SCREEN 1: SUNSET CLOCK
+========================= -->
+
+<div class="screen" id="sunset-screen">
+
+    <div class="sun-glow"></div>
+    <div class="sun"></div>
+
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+    <div class="cloud cloud4"></div>
+
+    <div class="clock-container">
+
+        <div id="clock">00:00</div>
+
+        <div id="date"></div>
+
+    </div>
+
 </div>
 
+<!-- =========================
+     SCREEN 2: WEATHER
+========================= -->
+
+<div class="screen" id="weather-screen">
+
+    <div class="weather-content">
+
+        <div class="weather-location" id="location">
+            Vallentuna
+        </div>
+
+        <div class="weather-icon" id="weather-icon">
+            🌤️
+        </div>
+
+        <div class="temperature" id="temperature">
+            --°
+        </div>
+
+        <div class="weather-description" id="description">
+            Loading weather
+        </div>
+
+        <div class="high-low" id="high-low">
+            H: --° &nbsp; L: --°
+        </div>
+
+        <div class="weather-details">
+
+            <div class="detail">
+                <div class="detail-label">Rain</div>
+                <div class="detail-value" id="rain">--%</div>
+            </div>
+
+            <div class="detail">
+                <div class="detail-label">Wind</div>
+                <div class="detail-value" id="wind">-- km/h</div>
+            </div>
+
+            <div class="detail">
+                <div class="detail-label">Humidity</div>
+                <div class="detail-value" id="humidity">--%</div>
+            </div>
+
+        </div>
+
+        <div class="hourly" id="hourly"></div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
 <script>
+
+/* SETTINGS */
+
+const CLOCK_DURATION = 15000;
+
+// FIXED LOCATION: VALLENTUNA
+
+const latitude = 59.5344;
+const longitude = 18.0776;
+const locationName = "Vallentuna";
+
+/* =========================
+   LIVE CLOCK
+========================= */
+
+const clockElement = document.getElementById("clock");
+const dateElement = document.getElementById("date");
+
 function updateClock() {
-  const now = new Date();
 
-  document.getElementById("clock").textContent =
-    now.toLocaleTimeString("sv-SE", {
-      hour: "2-digit",
-      minute: "2-digit"
+    const now = new Date();
+
+    const time = now.toLocaleTimeString("sv-SE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
     });
 
-  document.getElementById("date").textContent =
-    now.toLocaleDateString("en-GB", {
-      weekday: "long",
-      day: "numeric",
-      month: "long"
+    const date = now.toLocaleDateString("en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
     });
+
+    if (clockElement.textContent !== time) {
+        clockElement.textContent = time;
+    }
+
+    if (dateElement.textContent !== date) {
+        dateElement.textContent = date;
+    }
 }
 
 updateClock();
 setInterval(updateClock, 1000);
+
+/* =========================
+   WEATHER CONDITIONS
+========================= */
+
+function getWeather(code, isDay = true) {
+
+    if (code === 0)
+        return [isDay ? "☀️" : "🌙", "Clear Sky"];
+
+    if (code === 1)
+        return [isDay ? "🌤️" : "🌙", "Mostly Clear"];
+
+    if (code === 2)
+        return ["⛅", "Partly Cloudy"];
+
+    if (code === 3)
+        return ["☁️", "Cloudy"];
+
+    if ([45,48].includes(code))
+        return ["🌫️", "Foggy"];
+
+    if ([51,53,55,56,57].includes(code))
+        return ["🌦️", "Drizzle"];
+
+    if ([61,63,65,66,67,80,81,82].includes(code))
+        return ["🌧️", "Rainy"];
+
+    if ([71,73,75,77,85,86].includes(code))
+        return ["❄️", "Snowy"];
+
+    if ([95,96,99].includes(code))
+        return ["⛈️", "Thunderstorm"];
+
+    return ["🌤️", "Mixed Weather"];
+}
+
+/* =========================
+   FETCH LIVE VALLENTUNA WEATHER
+========================= */
+
+async function fetchWeather() {
+
+    try {
+
+        const url =
+            "https://api.open-meteo.com/v1/forecast" +
+            "?latitude=" + latitude +
+            "&longitude=" + longitude +
+            "&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m" +
+            "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+            "&hourly=temperature_2m,weather_code" +
+            "&temperature_unit=celsius" +
+            "&wind_speed_unit=kmh" +
+            "&timezone=Europe%2FStockholm" +
+            "&forecast_days=2";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Weather request failed");
+        }
+
+        const data = await response.json();
+
+        const current = data.current;
+        const daily = data.daily;
+        const hourly = data.hourly;
+
+        const weather = getWeather(
+            current.weather_code,
+            current.is_day === 1
+        );
+
+        /* MAIN WEATHER */
+
+        document.getElementById("location").textContent =
+            locationName;
+
+        document.getElementById("weather-icon").textContent =
+            weather[0];
+
+        document.getElementById("temperature").textContent =
+            Math.round(current.temperature_2m) + "°";
+
+        document.getElementById("description").textContent =
+            weather[1];
+
+        document.getElementById("high-low").textContent =
+            "H: " + Math.round(daily.temperature_2m_max[0]) +
+            "°   L: " + Math.round(daily.temperature_2m_min[0]) + "°";
+
+        /* WEATHER DETAILS */
+
+        const rainChance =
+            daily.precipitation_probability_max[0];
+
+        document.getElementById("rain").textContent =
+            rainChance == null ? "N/A" : rainChance + "%";
+
+        document.getElementById("wind").textContent =
+            Math.round(current.wind_speed_10m) + " km/h";
+
+        document.getElementById("humidity").textContent =
+            current.relative_humidity_2m + "%";
+
+        /* HOURLY FORECAST */
+
+        const hourlyContainer = document.getElementById("hourly");
+
+        hourlyContainer.innerHTML = "";
+
+        const currentHour = current.time.slice(0,13);
+
+        let startIndex = hourly.time.findIndex(
+            time => time.startsWith(currentHour)
+        );
+
+        if (startIndex < 0) startIndex = 0;
+
+        for (
+            let i = startIndex;
+            i < Math.min(startIndex + 6, hourly.time.length);
+            i++
+        ) {
+
+            const hour = hourly.time[i].slice(11,16);
+
+            const icon = getWeather(
+                hourly.weather_code[i],
+                true
+            )[0];
+
+            const temp = Math.round(hourly.temperature_2m[i]);
+
+            const element = document.createElement("div");
+
+            element.className = "hour";
+
+            const timeLabel = document.createElement("div");
+            timeLabel.textContent =
+                i === startIndex ? "Now" : hour;
+
+            const iconLabel = document.createElement("div");
+            iconLabel.className = "hour-icon";
+            iconLabel.textContent = icon;
+
+            const tempLabel = document.createElement("div");
+            tempLabel.textContent = temp + "°";
+
+            element.append(
+                timeLabel,
+                iconLabel,
+                tempLabel
+            );
+
+            hourlyContainer.appendChild(element);
+        }
+
+    } catch(error) {
+
+        console.error(error);
+
+        document.getElementById("location").textContent =
+            "Vallentuna";
+
+        document.getElementById("description").textContent =
+            "Weather unavailable";
+    }
+}
+
+/* =========================
+   SCREEN TRANSITION
+========================= */
+
+function showWeather() {
+
+    const sunset = document.getElementById("sunset-screen");
+    const weather = document.getElementById("weather-screen");
+
+    sunset.classList.add("hidden");
+    weather.classList.add("visible");
+}
+
+/* =========================
+   START
+========================= */
+
+// Fetch Vallentuna weather immediately.
+fetchWeather();
+
+// Switch from clock to weather after 7 seconds.
+setTimeout(showWeather, CLOCK_DURATION);
+
+// Refresh weather every 10 minutes.
+setInterval(fetchWeather, 600000);
+
 </script>
+
 </body>
 </html>
